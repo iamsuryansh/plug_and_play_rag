@@ -1,8 +1,9 @@
 from typing import Dict, Any
-from ..models import DatabaseType
+from ..models import DatabaseType, CSVConfig
 from ..database.base import DatabaseConnector
 from ..database.postgresql import PostgreSQLConnector
 from ..database.mongodb import MongoDBConnector
+from ..database.csv_connector import CSVConnector
 
 class DatabaseFactory:
     """Factory class for creating database connectors."""
@@ -16,7 +17,7 @@ class DatabaseFactory:
         Create and return appropriate database connector.
         
         Args:
-            db_type: Type of database (postgresql or mongodb)
+            db_type: Type of database (postgresql, mongodb, or csv)
             connection_params: Connection parameters
             
         Returns:
@@ -26,6 +27,10 @@ class DatabaseFactory:
             connector = PostgreSQLConnector(connection_params)
         elif db_type == DatabaseType.MONGODB:
             connector = MongoDBConnector(connection_params)
+        elif db_type == DatabaseType.CSV:
+            # For CSV, connection_params should contain CSV configuration
+            csv_config = CSVConfig(**connection_params)
+            connector = CSVConnector(csv_config)
         else:
             raise ValueError(f"Unsupported database type: {db_type}")
         

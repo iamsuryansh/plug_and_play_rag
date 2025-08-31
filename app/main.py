@@ -9,7 +9,11 @@ import uuid
 from datetime import datetime
 
 from .config import settings
-from .models import ChatRequest, ChatResponse, DataSourceConfig, HealthResponse
+from .models import (
+    ChatRequest, ChatResponse, DataSourceConfig, 
+    HealthResponse, IngestionStatus, StreamChunk,
+    CSVConfig, CSVColumnConfig, CSVColumnType
+)
 from .database.factory import DatabaseFactory
 from .embeddings.manager import EmbeddingManager
 from .ai.llm_factory import LLMFactory
@@ -364,6 +368,122 @@ async def get_recent_batches(limit: int = 20):
     except Exception as e:
         logger.error(f"Failed to get recent batches: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get recent batches: {str(e)}")
+
+@app.post("/ingest-csv")
+async def ingest_csv_data(csv_config: CSVConfig, background_tasks: BackgroundTasks):
+    """
+    Ingest data from a CSV file and create embeddings.
+    This runs in the background to avoid timeout issues.
+    """
+    try:
+        # Validate CSV file and configuration
+        from pathlib import Path
+        if not Path(csv_config.file_path).exists():
+            raise HTTPException(status_code=404, detail=f"CSV file not found: {csv_config.file_path}")
+        
+        # Create DataSourceConfig for CSV
+        config = DataSourceConfig(
+            db_type="csv",
+            connection_params=csv_config.model_dump(),
+            table_or_collection="csv_data",  # Not used for CSV
+            columns_or_fields=csv_config.text_columns,
+            text_fields=csv_config.text_columns
+        )
+        
+        # Add ingestion task to background
+        background_tasks.add_task(
+            rag_service.ingest_data_background,
+            config
+        )
+        
+        return {
+            "message": "CSV data ingestion started in background",
+            "status": "processing",
+            "file_path": csv_config.file_path,
+            "text_columns": csv_config.text_columns,
+            "config": config.model_dump()
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions  
+        raise
+    except Exception as e:
+        logger.error(f"Failed to start CSV data ingestion: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start CSV data ingestion: {str(e)}")
+
+@app.post("/validate-csv")
+async def validate_csv_config(csv_config: CSVConfig):
+    """
+    Validate CSV configuration and return schema information.
+    """
+    try:
+        from .database.csv_connector import CSVConnector
+        
+        # Create and test CSV connector
+        connector = CSVConnector(csv_config)
+        await connector.connect()
+        
+        # Get schema information
+        schema_info = connector.get_schema_info()
+        
+        await connector.disconnect()
+        
+        return {
+            "status": "valid",
+            "message": "CSV configuration is valid",
+            "schema_info": schema_info
+        }
+        
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to validate CSV configuration: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to validate CSV configuration: {str(e)}")
+
+@app.get("/csv-sample/{file_path:path}")
+async def get_csv_sample(file_path: str, rows: int = 5):
+    """
+    Get a sample of rows from CSV file for configuration assistance.
+    """
+    try:
+        import pandas as pd
+        from pathlib import Path
+        
+        if not Path(file_path).exists():
+            raise HTTPException(status_code=404, detail=f"CSV file not found: {file_path}")
+        
+        # Read sample rows
+        df_sample = pd.read_csv(file_path, nrows=rows)
+        
+        # Convert to records and handle NaN values
+        sample_records = []
+        for _, row in df_sample.iterrows():
+            record = {}
+            for key, value in row.items():
+                if pd.isna(value):
+                    record[key] = None
+                else:
+                    record[key] = value
+            sample_records.append(record)
+        
+        return {
+            "file_path": file_path,
+            "columns": list(df_sample.columns),
+            "sample_rows": sample_records,
+            "total_columns": len(df_sample.columns),
+            "sample_size": len(sample_records)
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"CSV file not found: {file_path}")
+    except Exception as e:
+        logger.error(f"Failed to read CSV sample: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to read CSV sample: {str(e)}")
 
 @app.post("/ingest-data")
 async def ingest_data(config: DataSourceConfig, background_tasks: BackgroundTasks):
