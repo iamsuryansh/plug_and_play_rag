@@ -1,0 +1,25 @@
+{
+  "db_type": "postgresql",
+  "connection_params": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "demo_user",
+    "password": "demo_password",
+    "database": "demo_db"
+  },
+  "table_or_collection": "articles",
+  "columns_or_fields": [
+    "id",
+    "title",
+    "content",
+    "category",
+    "author",
+    "created_at"
+  ],
+  "text_fields": [
+    "title",
+    "content",
+    "category",
+    "author"
+  ]
+}
