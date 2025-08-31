@@ -12,7 +12,8 @@ from .config import settings
 from .models import ChatRequest, ChatResponse, DataSourceConfig, HealthResponse
 from .database.factory import DatabaseFactory
 from .embeddings.manager import EmbeddingManager
-from .ai.gemini_client import GeminiClient
+from .ai.llm_factory import LLMFactory
+from .ai.base_client import BaseLLMClient
 from .chat.history_manager import ChatHistoryManager
 from .chat.rag_service import RAGService
 
@@ -60,8 +61,36 @@ async def lifespan(app: FastAPI):
         embedding_manager = EmbeddingManager()
         await embedding_manager.initialize()
         
-        # Initialize Gemini client
-        gemini_client = GeminiClient(settings.GEMINI_API_KEY)
+        # Initialize LLM client
+        logger.info(f"Initializing {settings.LLM_PROVIDER} LLM client...")
+        if settings.LLM_PROVIDER.lower() == "gemini":
+            llm_client = LLMFactory.create_client(
+                provider="gemini",
+                api_key=settings.GEMINI_API_KEY
+            )
+        elif settings.LLM_PROVIDER.lower() == "ollama":
+            llm_client = LLMFactory.create_client(
+                provider="ollama",
+                model_name=settings.OLLAMA_MODEL,
+                endpoint_url=settings.OLLAMA_ENDPOINT
+            )
+        elif settings.LLM_PROVIDER.lower() == "lmstudio":
+            llm_client = LLMFactory.create_client(
+                provider="lmstudio",
+                model_name=settings.LMSTUDIO_MODEL,
+                endpoint_url=settings.LMSTUDIO_ENDPOINT
+            )
+        else:
+            # Use custom configuration
+            llm_client = LLMFactory.create_client(
+                provider=settings.LLM_PROVIDER,
+                model_name=settings.LLM_MODEL_NAME,
+                endpoint_url=settings.LLM_ENDPOINT_URL,
+                api_key=settings.LLM_API_KEY
+            )
+        
+        # For backward compatibility, set both variables
+        gemini_client = llm_client
         
         # Initialize chat history manager
         chat_history_manager = ChatHistoryManager()
@@ -165,6 +194,78 @@ async def health_check():
         message="All services are operational",
         version="1.0.0"
     )
+
+@app.get("/api/llm/providers")
+async def get_llm_providers():
+    """Get information about supported LLM providers."""
+    return LLMFactory.get_supported_providers()
+
+@app.get("/api/llm/current")
+async def get_current_llm():
+    """Get information about the current LLM provider."""
+    if not gemini_client:
+        raise HTTPException(status_code=503, detail="No LLM client available")
+    
+    try:
+        info = gemini_client.get_client_info()
+        return {
+            "provider": info.get("type"),
+            "model": info.get("model"),
+            "status": "active"
+        }
+    except Exception as e:
+        logger.error(f"Error getting LLM info: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving LLM information")
+
+@app.post("/api/llm/switch")
+async def switch_llm_provider(request: dict):
+    """Switch to a different LLM provider temporarily (for this session)."""
+    global gemini_client, rag_service
+    
+    try:
+        provider = request.get("provider")
+        model_name = request.get("model_name")
+        endpoint_url = request.get("endpoint_url")
+        api_key = request.get("api_key")
+        
+        if not provider:
+            raise HTTPException(status_code=400, detail="Provider is required")
+        
+        # Create new client
+        new_client = LLMFactory.create_client(
+            provider=provider,
+            model_name=model_name,
+            endpoint_url=endpoint_url,
+            api_key=api_key
+        )
+        
+        # Test the new client
+        test_response = await new_client.generate_response(
+            "Test message",
+            context="This is a test to verify the LLM client is working."
+        )
+        
+        # If test passes, switch to new client
+        gemini_client = new_client
+        
+        # Update RAG service with new client
+        if rag_service:
+            rag_service.llm_client = new_client
+        
+        info = new_client.get_client_info()
+        return {
+            "status": "success",
+            "message": f"Switched to {provider}",
+            "provider": info.get("type"),
+            "model": info.get("model"),
+            "test_response": test_response[:100] + "..." if len(test_response) > 100 else test_response
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error switching LLM provider: {e}")
+        raise HTTPException(status_code=500, detail="Error switching LLM provider")
 
 @app.post("/ingest-data-async")
 async def ingest_data_async(config: DataSourceConfig):

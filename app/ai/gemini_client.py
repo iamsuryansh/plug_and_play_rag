@@ -3,10 +3,11 @@ from typing import List, Dict, Any, AsyncIterator
 import logging
 import asyncio
 from ..config import settings
+from .base_client import BaseLLMClient
 
 logger = logging.getLogger(__name__)
 
-class GeminiClient:
+class GeminiClient(BaseLLMClient):
     """Client for interacting with Google Gemini AI."""
     
     def __init__(self, api_key: str):
@@ -28,6 +29,7 @@ class GeminiClient:
             logger.info(f"Gemini client initialized with model: {settings.GEMINI_MODEL}")
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
+            raise
             raise
     
     def _build_system_prompt(self) -> str:
@@ -187,3 +189,14 @@ Response guidelines:
         except Exception as e:
             logger.error(f"Gemini connection test failed: {e}")
             return False
+    
+    def get_client_info(self) -> Dict[str, Any]:
+        """Get information about the Gemini client."""
+        return {
+            "type": "gemini",
+            "model": settings.GEMINI_MODEL,
+            "temperature": settings.GEMINI_TEMPERATURE,
+            "max_tokens": settings.GEMINI_MAX_TOKENS,
+            "has_api_key": bool(self.api_key),
+            "initialized": self.model is not None
+        }

@@ -41,13 +41,17 @@ curl -X POST "http://localhost:8001/chat" \
 ## 🏗️ System Architecture
 
 ```
+```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Data Sources  │────│   RAG Pipeline   │────│   AI Response   │
 │                 │    │                  │    │                 │
-│  • PostgreSQL   │    │  • Data Ingestion│    │  • Gemini AI    │
-│  • MongoDB      │    │  • Vector Search │    │  • Streaming    │
-│  • Files        │    │  • Context Assembly│    │  • Chat History │
+│  • PostgreSQL   │    │  • Data Ingestion│    │  • Multiple LLMs│
+│  • MongoDB      │    │  • Vector Search │    │  • Gemini AI    │
+│  • Files        │    │  • Context Assembly    │  • Ollama       │
+│                 │    │  • Event Streaming│    │  • LM Studio    │
+│                 │    │    (Kafka)       │    │  • Custom APIs  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
+```
                                 │
                     ┌──────────────────┐
                     │  Event Processing │
@@ -72,7 +76,11 @@ curl -X POST "http://localhost:8001/chat" \
 - **Status Tracking**: Redis-based real-time progress monitoring
 - **Graceful Degradation**: Works with or without optional components
 
-### 🤖 **AI-Powered Chat**
+### 🤖 **Multi-LLM Support**
+- **Multiple Providers**: Gemini AI, Ollama, LM Studio, OpenAI-compatible APIs
+- **Runtime Switching**: Change LLM providers without restart
+- **Local Models**: Support for on-premise LLMs (Ollama, LM Studio)
+- **Custom Endpoints**: Integrate any API with configurable request/response formats
 - **Context-Aware**: Uses retrieved documents to provide accurate answers
 - **Streaming Responses**: Real-time token generation for better UX
 - **Chat History**: Per-user conversation memory and context
@@ -110,9 +118,20 @@ pip install -r requirements.txt
 # Create environment file
 cp .env.example .env
 
-# Add your Gemini API key (required for AI responses)
+# Add your Gemini API key (required for default setup)
 echo "GEMINI_API_KEY=your_api_key_here" >> .env
+
+# Optional: Configure different LLM providers
+echo "LLM_PROVIDER=ollama" >> .env         # Use local Ollama
+echo "OLLAMA_MODEL=llama2" >> .env         # Specify model
+# OR
+echo "LLM_PROVIDER=lmstudio" >> .env       # Use LM Studio
+# OR  
+echo "LLM_PROVIDER=custom" >> .env         # Use custom endpoint
+echo "LLM_ENDPOINT_URL=http://localhost:8080/chat" >> .env
 ```
+
+**📖 For detailed LLM configuration options, see [LLM_CONFIGURATION.md](LLM_CONFIGURATION.md)**
 
 ### 3. Run the System
 ```bash
@@ -171,6 +190,11 @@ chat-with-your-data/
 - `POST /ingest-data-async` - Async data ingestion (Kafka)
 - `GET /ingest-status/{batch_id}` - Check ingestion progress
 
+### LLM Management
+- `GET /api/llm/providers` - List supported LLM providers
+- `GET /api/llm/current` - Get current active LLM provider
+- `POST /api/llm/switch` - Switch LLM provider at runtime
+
 ### History Management
 - `GET /chat/history/{user_name}` - Retrieve chat history
 - `DELETE /chat/history/{user_name}` - Clear user history
@@ -196,6 +220,25 @@ chat-with-your-data/
   "table_or_collection": "products",
   "columns_or_fields": ["name", "description", "category"],
   "text_fields": ["name", "description"]
+}
+```
+
+### Example: Switch to Ollama
+```json
+{
+  "provider": "ollama",
+  "model_name": "llama2",
+  "endpoint_url": "http://localhost:11434"
+}
+```
+
+### Example: Switch to Custom LLM
+```json
+{
+  "provider": "custom",
+  "model_name": "my-model",
+  "endpoint_url": "http://localhost:8080/chat",
+  "api_key": "optional-key"
 }
 ```
 
