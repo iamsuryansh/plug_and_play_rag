@@ -1,53 +1,123 @@
-app_name: Plug-and-Play RAG
+# 🚀 Plug-and-Play RAG System Configuration
+# This file controls all aspects of your AI assistant
+# Edit the values below to customize your system
+
+# =============================================================================
+# 🎯 BASIC SETTINGS
+# =============================================================================
+
+app_name: "My AI Data Assistant"
+description: "Retrieval-Augmented Generation system with multiple data sources"
+
+# Auto-ingest data when the system starts (recommended: true)
 auto_ingest_on_startup: true
-batch_processing: true
-cors_origins:
-- '*'
-csv_sources:
-- chunk_size: 1000
-  columns:
-  - name: title
-    required: true
-    type: text
-  - name: content
-    required: true
-    type: text
-  - name: category
-    required: false
-    type: text
-  delimiter: ','
-  encoding: utf-8
-  file_path: sample_data.csv
-  has_header: true
-  metadata_columns:
-  - category
-  name: sample_articles
-  text_columns:
-  - title
-  - content
-description: Retrieval-Augmented Generation system with multiple data sources
-embedding:
-  batch_size: 32
-  device: cpu
-  model_name: all-MiniLM-L6-v2
+
+# Enable chat history to remember conversations (recommended: true)  
 enable_chat_history: true
-enable_cors: true
+
+# Enable real-time streaming responses (recommended: true)
 enable_streaming: true
+
+# =============================================================================
+# 🤖 AI PROVIDER CONFIGURATION  
+# Choose your AI provider and configure it below
+# =============================================================================
+
 llm:
-  api_key: ${GEMINI_API_KEY}
-  model_name: gemini-pro
-  provider: gemini
-  temperature: 0.7
-server:
-  host: 0.0.0.0
-  log_level: info
-  port: 8000
-  reload: false
-  workers: 1
+  # OPTION 1: Google Gemini (Recommended - Fast & Free tier)
+  provider: "gemini"
+  api_key: "${GEMINI_API_KEY}"  # Set this in your .env file
+  model_name: "gemini-pro"
+  temperature: 0.7  # 0.0 = focused, 1.0 = creative
+  
+  # OPTION 2: OpenAI (Uncomment to use)
+  # provider: "openai"  
+  # api_key: "${OPENAI_API_KEY}"
+  # model_name: "gpt-4o-mini"
+  # temperature: 0.7
+  
+  # OPTION 3: Local Ollama (Uncomment to use - no API key needed!)
+  # provider: "ollama"
+  # base_url: "http://localhost:11434"  
+  # model_name: "llama3"
+  # temperature: 0.7
+
+# =============================================================================
+# 📊 DATA SOURCES - CSV FILES
+# Add your CSV files here 
+# =============================================================================
+
+csv_sources:
+  - name: "sample_articles"           # Give your data source a name
+    file_path: "sample_data.csv"      # Path to your CSV file (in data/ folder)
+    
+    # Columns that contain the text you want to search through
+    text_columns:
+      - "title"      # Article titles
+      - "content"    # Main content
+    
+    # Columns with additional information (shown in search results)  
+    metadata_columns:
+      - "category"   # Article category
+      # - "date"     # Uncomment if you have a date column
+      # - "author"   # Uncomment if you have an author column
+    
+    # CSV parsing options (usually don't need to change)
+    delimiter: ","
+    encoding: "utf-8"
+    has_header: true
+    chunk_size: 1000
+    
+    # Optional: Define column types for better processing
+    columns:
+      - name: "title"
+        type: "text"
+        required: true
+      - name: "content"  
+        type: "text"
+        required: true
+      - name: "category"
+        type: "text"
+        required: false
+
+# =============================================================================
+# 🔍 SEARCH & EMBEDDING SETTINGS
+# Controls how your data is processed and searched
+# =============================================================================
+
+embedding:
+  # Text embedding model (converts text to searchable vectors)
+  model_name: "all-MiniLM-L6-v2"  # Fast and good quality
+  batch_size: 32
+  device: "cpu"  # Use "cuda" if you have a GPU
+
 vector_db:
-  collection_name: rag_documents
-  max_results: 10
-  persist_directory: /app/chroma_db
+  collection_name: "rag_documents"
+  max_results: 10                    # Max search results per query
+  persist_directory: "/app/chroma_db"  # Where to store the search index
+
+# =============================================================================
+# 🌐 SERVER SETTINGS
+# Controls how the web API runs
+# =============================================================================
+
+server:
+  host: "0.0.0.0"     # Listen on all interfaces
+  port: 8000          # API will be available at http://localhost:8000
+  workers: 1          # Number of worker processes
+  reload: false       # Auto-reload on code changes (development only)
+  log_level: "info"   # Logging level: debug, info, warning, error
+
+# CORS settings (for web browsers)
+enable_cors: true
+cors_origins:
+  - "*"  # Allow all origins (⚠️ change for production)
+
+# =============================================================================
+# 🚀 PERFORMANCE SETTINGS  
+# =============================================================================
+
+batch_processing: true  # Process data in batches for better performance
   similarity_threshold: 0.7
   type: chromadb
 version: 1.0.0

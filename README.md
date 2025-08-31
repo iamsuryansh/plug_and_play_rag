@@ -1,369 +1,360 @@
-# � Plug-and-Play RAG - Universal AI Data Assistant
+# 🚀 Plug-and-Play RAG System
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-0.4+-orange.svg)](https://www.trychroma.com/)
-[![Multi-LLM](https://img.shields.io/badge/Multi--LLM-Supported-purple.svg)](LLM_CONFIGURATION.md)
-[![Kafka](https://img.shields.io/badge/Kafka-Ready-red.svg)](https://kafka.apache.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](http://localhost:8001)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
+[![Multi-LLM](https://img.shields.io/badge/Multi--LLM-Supported-purple.svg)](#-supported-llm-providers)
 
-> **🎯 Universal plug-and-play RAG system that connects any database to any LLM - from local Ollama to cloud Gemini AI**
+> **🎯 Chat with your data using AI - No coding required!**
 
-**Instead of writing SQL:** `SELECT * FROM articles WHERE category='tech' AND published_date > '2024-01-01'`  
-**Just ask:** *"What tech articles have we published recently?"*
+Transform your CSV files, databases, and documents into an intelligent AI assistant that understands and answers questions about your data in natural language.
 
 ---
 
-## ⚡ Quick Demo
+## 🌟 What Can You Do?
 
+**Instead of complex queries like:**
+```sql
+SELECT * FROM sales WHERE region='North' AND revenue > 10000 AND date > '2024-01-01'
+```
+
+**Just ask:**
+> *"Show me high-revenue sales from the North region this year"*
+
+**Instead of searching through documents manually:**
+**Just ask:**
+> *"What are the key findings from our customer feedback?"*
+
+---
+
+## ⚡ Quick Start (2 Minutes Setup)
+
+### Option 1: Automated Setup (Recommended)
 ```bash
-# 1. Start the system
-./start.sh
+# 1. Clone the repository
+git clone https://github.com/your-username/plug-and-play-rag.git
+cd plug-and-play-rag
 
-# 2. Ingest your data  
-curl -X POST "http://localhost:8001/ingest-data" \
+# 2. Run interactive setup
+python setup.py
+
+# 3. Deploy with one command
+./deploy.sh
+```
+
+### Option 2: Manual Setup
+```bash
+# 1. Copy your CSV files to data folder
+cp your-data.csv data/
+
+# 2. Configure your settings
+cp config/app_config.yaml config/my_config.yaml
+# Edit my_config.yaml with your preferences
+
+# 3. Start the system
+docker-compose -f docker-compose.plug-and-play.yml up
+```
+
+### 🎉 That's it! Your AI assistant is ready at `http://localhost:8000`
+
+---
+
+## 💡 Key Features
+
+| Feature | Description | Benefit |
+|---------|-------------|---------|
+| **🔧 Zero-Code Setup** | Configure everything through YAML files | No programming required |
+| **🐳 Docker Ready** | One-command deployment | Works everywhere |
+| **🤖 Multi-LLM Support** | Gemini, OpenAI, Ollama, LM Studio | Choose your preferred AI |
+| **📊 Any Data Source** | CSV, PostgreSQL, MongoDB | Use your existing data |
+| **🌊 Real-time Chat** | Streaming responses | Fast, interactive experience |
+| **📝 Smart Memory** | Remembers conversation history | Contextual conversations |
+| **🔍 Smart Search** | Finds relevant information automatically | Accurate, sourced answers |
+
+---
+
+## 🗂️ Supported Data Sources
+
+- **📄 CSV Files** - Perfect for spreadsheets and exported data
+- **🐘 PostgreSQL** - Enterprise relational databases  
+- **🍃 MongoDB** - Document and NoSQL databases
+- **🔜 More coming soon** - MySQL, SQLite, APIs, and more
+
+## 🤖 Supported LLM Providers
+
+- **🔮 Google Gemini** - Powerful and fast (recommended)
+- **🧠 OpenAI GPT** - Most popular choice
+- **🦙 Ollama** - Run locally on your machine
+- **💻 LM Studio** - Local models with GPU acceleration  
+- **🔗 Custom APIs** - Bring your own LLM endpoint
+
+---
+
+## 📚 Step-by-Step Guide
+
+### 1. 🎯 Set Your Goal
+What do you want to ask your data? Examples:
+- Analyze customer feedback patterns
+- Search through technical documentation
+- Query sales and revenue data
+- Find insights in research papers
+
+### 2. 📁 Prepare Your Data
+Put your data in the `data/` folder:
+```
+data/
+├── customer_feedback.csv
+├── sales_data.csv
+└── product_catalog.csv
+```
+
+### 3. ⚙️ Configure Your System
+Edit `config/app_config.yaml`:
+```yaml
+app_name: "My Data Assistant"
+
+# Choose your AI provider
+llm:
+  provider: "gemini"  # or openai, ollama, lmstudio
+  api_key: "${GEMINI_API_KEY}"
+  
+# Configure your data sources
+csv_sources:
+  - name: "customer_feedback"
+    file_path: "data/customer_feedback.csv"
+    text_columns: ["feedback", "comments"]
+    metadata_columns: ["date", "rating", "product"]
+```
+
+### 4. 🔑 Set Your API Keys
+Copy `.env.template` to `.env` and add your API keys:
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here  # if using OpenAI
+```
+
+### 5. 🚀 Launch Your Assistant
+```bash
+# Automated deployment
+./deploy.sh
+
+# Or manual Docker deployment
+docker-compose -f docker-compose.plug-and-play.yml up
+```
+
+### 6. 💬 Start Chatting!
+```bash
+# Test your assistant
+curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"db_type": "demo", "table_or_collection": "articles", "text_fields": ["title", "content"]}'
+  -d '{"message": "What patterns do you see in customer feedback?", "user_name": "analyst"}'
+```
 
-# 3. Ask questions in natural language
-curl -X POST "http://localhost:8001/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What articles do you have about AI?", "user_name": "demo"}'
+---
 
-# 4. Get intelligent responses
+## 🔧 Configuration Examples
+
+### Basic CSV Setup
+```yaml
+llm:
+  provider: "gemini"
+  api_key: "${GEMINI_API_KEY}"
+
+csv_sources:
+  - name: "products"
+    file_path: "data/products.csv"
+    text_columns: ["name", "description"]
+    metadata_columns: ["category", "price", "id"]
+
+auto_ingest_on_startup: true
+```
+
+### PostgreSQL Database Setup
+```yaml
+llm:
+  provider: "openai"
+  api_key: "${OPENAI_API_KEY}"
+
+database_sources:
+  - name: "user_database" 
+    db_type: "postgresql"
+    connection_params:
+      host: "localhost"
+      port: 5432
+      database: "mydb"
+      username: "${DB_USERNAME}"
+      password: "${DB_PASSWORD}"
+    table_or_collection: "articles"
+    text_fields: ["title", "content"]
+```
+
+### Local Ollama Setup (No API Keys Needed!)
+```yaml
+llm:
+  provider: "ollama"
+  base_url: "http://localhost:11434"
+  model_name: "llama3"
+
+csv_sources:
+  - name: "documents"
+    file_path: "data/docs.csv"
+    text_columns: ["content"]
+```
+
+---
+
+## 🚀 API Reference
+
+### Health Check
+```bash
+GET /health
+# Response: {"status": "healthy", "timestamp": "2024-08-31T10:00:00Z"}
+```
+
+### Chat with Your Data
+```bash
+POST /chat
 {
-  "response": "I found several AI-related articles in your database...",
-  "sources": [{"title": "Machine Learning Trends", "relevance": 0.94}],
-  "user_name": "demo"
+  "message": "What insights can you find in the data?",
+  "user_name": "analyst",
+  "max_results": 5,
+  "include_history": true
 }
 ```
 
-## 🔌 What Makes It "Plug-and-Play"?
-
-**🗃️ Any Database → Any LLM → Any Scale**
-
-- **Plug in your data**: PostgreSQL, MongoDB, CSV files, APIs
-- **Play with any LLM**: Gemini, Ollama, LM Studio, custom endpoints  
-- **Scale as needed**: From laptop to enterprise with Kafka + Redis
-
-No vendor lock-in. No complex setup. Just plug your data source, choose your LLM, and start chatting!
-
-## 🏗️ System Architecture
-
-```
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Data Sources  │────│   RAG Pipeline   │────│   AI Response   │
-│                 │    │                  │    │                 │
-│  • PostgreSQL   │    │  • Data Ingestion│    │  • Multiple LLMs│
-│  • MongoDB      │    │  • Vector Search │    │  • Gemini AI    │
-│  • Files        │    │  • Context Assembly    │  • Ollama       │
-│                 │    │  • Event Streaming│    │  • LM Studio    │
-│                 │    │    (Kafka)       │    │  • Custom APIs  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
-                                │
-                    ┌──────────────────┐
-                    │  Event Processing │
-                    │                  │
-                    │  • Kafka Topics  │
-                    │  • Redis Status  │ 
-                    │  • Worker Pools  │
-                    └──────────────────┘
-```
-
-## ✨ Key Features
-
-### 🔍 **Intelligent Search**
-- **Semantic Search**: Find documents by meaning, not just keywords
-- **Vector Embeddings**: 384-dimensional vectors with Sentence Transformers
-- **Multi-Database**: PostgreSQL, MongoDB, and demo data support
-- **Real-time Results**: Sub-second query response times
-
-### ⚡ **Scalable Architecture**  
-- **Event-Driven**: Kafka-based async processing for high throughput
-- **Horizontal Scaling**: Multiple consumer workers for parallel processing
-- **Status Tracking**: Redis-based real-time progress monitoring
-- **Graceful Degradation**: Works with or without optional components
-
-### 🤖 **Multi-LLM Support**
-- **Multiple Providers**: Gemini AI, Ollama, LM Studio, OpenAI-compatible APIs
-- **Runtime Switching**: Change LLM providers without restart
-- **Local Models**: Support for on-premise LLMs (Ollama, LM Studio)
-- **Custom Endpoints**: Integrate any API with configurable request/response formats
-- **Context-Aware**: Uses retrieved documents to provide accurate answers
-- **Streaming Responses**: Real-time token generation for better UX
-- **Chat History**: Per-user conversation memory and context
-- **Source Attribution**: Shows which documents informed each response
-
-### 🛠️ **Developer Experience**
-- **Interactive Docs**: Auto-generated Swagger UI at `/docs`
-- **Hot Reload**: Instant code changes during development  
-- **Comprehensive Logging**: Structured logs with configurable levels
-- **Docker Ready**: Complete containerization with Docker Compose
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.12+
-- Docker & Docker Compose (for Kafka/Redis)
-- Git
-
-### 1. Clone & Setup
+### Streaming Chat (Real-time)
 ```bash
-git clone https://github.com/yourusername/chat-with-your-data.git
-cd chat-with-your-data
+POST /chat/stream
+# Returns server-sent events with real-time responses
+```
 
-# Option A: Automated setup (recommended)
-./start.sh
+### Data Ingestion
+```bash
+POST /ingest-data
+{
+  "db_type": "csv",
+  "table_or_collection": "my_data.csv",
+  "text_fields": ["title", "content"]
+}
+```
 
-# Option B: Manual setup
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+---
+
+## 🛠️ Advanced Usage
+
+### Custom Docker Setup
+```bash
+# Build custom image
+docker build -t my-rag-system .
+
+# Run with custom config
+docker run -p 8000:8000 -v $(pwd)/config:/app/config my-rag-system
+```
+
+### Development Mode
+```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run in development
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 2. Configuration
-```bash
-# Create environment file
-cp .env.example .env
+### Adding New Data Sources
+1. Add CSV files to `data/` folder
+2. Update `config/app_config.yaml`
+3. Restart the system - data is automatically ingested!
 
-# Add your Gemini API key (required for default setup)
-echo "GEMINI_API_KEY=your_api_key_here" >> .env
+---
 
-# Optional: Configure different LLM providers
-echo "LLM_PROVIDER=ollama" >> .env         # Use local Ollama
-echo "OLLAMA_MODEL=llama2" >> .env         # Specify model
-# OR
-echo "LLM_PROVIDER=lmstudio" >> .env       # Use LM Studio
-# OR  
-echo "LLM_PROVIDER=custom" >> .env         # Use custom endpoint
-echo "LLM_ENDPOINT_URL=http://localhost:8080/chat" >> .env
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**❌ "API key not found"**
+- Check your `.env` file has the correct API key
+- Make sure the key starts with the right prefix (e.g., `AIza...` for Gemini)
+
+**❌ "Docker container won't start"**
+- Run `docker-compose logs` to see error details
+- Check if ports 8000 is already in use
+
+**❌ "No data found"**
+- Verify your CSV files are in the `data/` folder
+- Check the column names in your YAML configuration match your CSV headers
+
+**❌ "Slow responses"**
+- Try reducing `max_results` in your chat requests
+- Consider using a faster LLM provider like Gemini
+
+### Getting Help
+
+1. Check the [troubleshooting guide](docs/troubleshooting.md)
+2. Look at example configurations in `config/examples/`
+3. Open an issue on GitHub with your configuration and error logs
+
+---
+
+## 📊 Example Use Cases
+
+### Business Intelligence
+```yaml
+# Analyze sales data
+csv_sources:
+  - name: "sales"
+    file_path: "data/sales_2024.csv"
+    text_columns: ["product_name", "customer_feedback"]
+    metadata_columns: ["date", "revenue", "region"]
 ```
+**Ask:** *"Which products had the highest customer satisfaction in Q2?"*
 
-**📖 For detailed LLM configuration options, see [LLM_CONFIGURATION.md](LLM_CONFIGURATION.md)**
-
-### 3. Run the System
-```bash
-# Start with full infrastructure (Kafka + Redis)
-docker-compose up -d
-python -m uvicorn app.main:app --reload
-
-# Or run basic mode (no Kafka/Redis required)
-python -m uvicorn app.main:app --port 8001 --reload
+### Document Search
+```yaml
+# Search technical documentation
+csv_sources:
+  - name: "docs"
+    file_path: "data/documentation.csv" 
+    text_columns: ["title", "content", "summary"]
+    metadata_columns: ["category", "last_updated", "author"]
 ```
+**Ask:** *"How do I configure authentication in the API?"*
 
-### 4. Verify Installation
-- **API Documentation**: http://localhost:8001/docs
-- **Health Check**: http://localhost:8001/health  
-- **System Status**: http://localhost:8001/status
-
-## 📊 Performance Metrics
-
-| Metric | Value | Details |
-|--------|--------|---------|
-| **Query Response** | < 1 second | Semantic search + AI generation |
-| **Concurrent Users** | 1000+ | Tested with async FastAPI |
-| **Document Processing** | 100-1000/min | Depends on CPU for embeddings |
-| **Search Accuracy** | ~94% | Based on relevance scoring |
-| **Memory Usage** | ~700MB | Base app + ML models |
-
-## 🗂️ Project Structure
-
+### Research Analysis
+```yaml
+# Analyze research papers
+csv_sources:
+  - name: "papers"
+    file_path: "data/research_papers.csv"
+    text_columns: ["abstract", "conclusions", "methodology"]
+    metadata_columns: ["authors", "journal", "year", "citations"]
 ```
-chat-with-your-data/
-├── app/
-│   ├── ai/                 # Gemini AI integration
-│   ├── chat/              # RAG service & history
-│   ├── database/          # Multi-DB connectors
-│   ├── embeddings/        # Vector operations
-│   ├── messaging/         # Kafka integration
-│   └── main.py           # FastAPI application
-├── docs/                  # Documentation
-├── tests/                 # Test suites  
-├── docker-compose.yml     # Infrastructure services
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
-```
+**Ask:** *"What are the latest trends in machine learning research?"*
 
-## 🔌 API Reference
+---
 
-### Core Endpoints
-- `GET /` - System information
-- `GET /health` - Health check
-- `GET /status` - Detailed system status
-- `POST /chat` - Synchronous chat
-- `POST /chat/stream` - Streaming chat responses
+## 🚀 What's Next?
 
-### Data Management
-- `POST /ingest-data` - Synchronous data ingestion  
-- `POST /ingest-data-async` - Async data ingestion (Kafka)
-- `GET /ingest-status/{batch_id}` - Check ingestion progress
+- **🔗 API Integrations** - Connect to REST APIs and web services
+- **📱 Mobile App** - Chat with your data on mobile devices  
+- **🎨 Web UI** - Beautiful web interface for non-technical users
+- **📈 Analytics Dashboard** - Visualize your data insights
+- **🔐 Enterprise Security** - Advanced authentication and permissions
 
-### LLM Management
-- `GET /api/llm/providers` - List supported LLM providers
-- `GET /api/llm/current` - Get current active LLM provider
-- `POST /api/llm/switch` - Switch LLM provider at runtime
-
-### History Management
-- `GET /chat/history/{user_name}` - Retrieve chat history
-- `DELETE /chat/history/{user_name}` - Clear user history
-
-### Example: Chat Request
-```json
-{
-  "message": "What are our most popular products?",
-  "user_name": "analyst"
-}
-```
-
-### Example: Data Ingestion
-```json
-{
-  "db_type": "postgresql",
-  "connection_params": {
-    "host": "localhost",
-    "database": "products", 
-    "user": "analyst",
-    "password": "secret"
-  },
-  "table_or_collection": "products",
-  "columns_or_fields": ["name", "description", "category"],
-  "text_fields": ["name", "description"]
-}
-```
-
-### Example: Switch to Ollama
-```json
-{
-  "provider": "ollama",
-  "model_name": "llama2",
-  "endpoint_url": "http://localhost:11434"
-}
-```
-
-### Example: Switch to Custom LLM
-```json
-{
-  "provider": "custom",
-  "model_name": "my-model",
-  "endpoint_url": "http://localhost:8080/chat",
-  "api_key": "optional-key"
-}
-```
-
-## 🧪 Testing & Development
-
-### Run Tests
-```bash
-# Basic functionality test
-python test_integration.py
-
-# API endpoint testing
-pytest tests/
-
-# Load testing (optional)
-locust -f tests/load_test.py
-```
-
-### Demo Mode
-Test without databases using built-in demo data:
-```bash
-curl -X POST "http://localhost:8001/ingest-data" \
-  -H "Content-Type: application/json" \
-  -d '{"db_type": "demo", "table_or_collection": "articles", "text_fields": ["title", "content"]}'
-```
-
-## 🐳 Deployment
-
-### Docker Compose (Recommended)
-```bash
-# Start complete infrastructure
-docker-compose up -d
-
-# Check services
-docker-compose ps
-```
-
-### Manual Deployment
-```bash
-# Production server
-gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-
-# With workers for scaling
-gunicorn app.main:app -k uvicorn.workers.UvicornWorker --workers 4 --bind 0.0.0.0:8000
-```
-
-### Environment Variables
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GEMINI_API_KEY` | Google Gemini API key | Required |
-| `DATABASE_URL` | PostgreSQL connection | Optional |
-| `MONGODB_URL` | MongoDB connection | Optional |
-| `KAFKA_BOOTSTRAP_SERVERS` | Kafka brokers | `localhost:9092` |
-| `REDIS_URL` | Redis connection | `redis://localhost:6379` |
-| `DEBUG` | Debug mode | `true` |
-| `LOG_LEVEL` | Logging level | `INFO` |
-
-## 📈 Scaling & Production
-
-### Horizontal Scaling
-- **API Servers**: Run multiple FastAPI instances behind load balancer
-- **Worker Processes**: Scale Kafka consumers based on message volume  
-- **Database**: Use read replicas for query distribution
-- **Caching**: Redis cluster for distributed status tracking
-
-### Monitoring
-- **Health Endpoints**: Built-in health checks at `/health` and `/status`
-- **Logging**: Structured JSON logs with correlation IDs
-- **Metrics**: Ready for Prometheus/Grafana integration
-- **Tracing**: OpenTelemetry compatible
-
-### Security
-- **API Keys**: Environment-based secret management
-- **CORS**: Configurable cross-origin policies
-- **Input Validation**: Pydantic model validation
-- **SQL Injection**: Parameterized queries only
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Commit: `git commit -m 'Add amazing feature'`
-5. Push: `git push origin feature/amazing-feature`
-6. Open a Pull Request
-
-### Development Setup
-```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Run pre-commit hooks
-pre-commit install
-
-# Run tests
-pytest
-```
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## ⭐ Show Your Support
 
-- **FastAPI** for the excellent async web framework
-- **ChromaDB** for vector database capabilities
-- **Sentence Transformers** for state-of-the-art embeddings
-- **Google Gemini** for AI response generation
-- **Apache Kafka** for event-driven architecture
+If this project helped you, please give it a ⭐ on GitHub!
 
 ---
 
-<p align="center">
-  <strong>Built with ❤️ for the developer community</strong><br>
-  <a href="https://github.com/yourusername/chat-with-your-data/issues">Report Bug</a> •
-  <a href="https://github.com/yourusername/chat-with-your-data/issues">Request Feature</a> •
-  <a href="mailto:your.email@domain.com">Contact</a>
-</p>
+**Made with ❤️ by the AI community**

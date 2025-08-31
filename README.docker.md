@@ -1,102 +1,61 @@
-# 🚀 Plug-and-Play RAG System
+# � Docker Deployment Guide
 
-A configuration-driven Retrieval-Augmented Generation (RAG) system that can be deployed anywhere with minimal setup. Just configure your data sources, LLM provider, and run!
+**Deploy your Plug-and-Play RAG system anywhere with Docker!**
 
-## ✨ Features
+This guide shows you how to deploy the RAG system using Docker containers. Perfect for production environments, cloud deployment, or when you want consistent behavior across different machines.
 
-- **🔧 Configuration-Driven**: Everything configurable through YAML files
-- **🐳 Docker-Ready**: Complete containerization with docker-compose
-- **🤖 Multiple LLM Support**: Gemini, OpenAI, Ollama, LM Studio, and custom endpoints
-- **📊 Multiple Data Sources**: CSV files, PostgreSQL, MongoDB
-- **🚀 Auto-Ingestion**: Automatic data ingestion on startup
-- **💬 Chat History**: Per-user conversation history
-- **🌊 Streaming Responses**: Real-time streaming chat responses
-- **🔍 Semantic Search**: Advanced vector similarity search
-- **📈 Health Monitoring**: Built-in health checks and monitoring
+---
 
-## 🏃‍♂️ Quick Start
-
-### 1. Clone and Setup
+## ⚡ Quick Start (30 seconds)
 
 ```bash
+# 1. Clone and navigate
 git clone <your-repo-url>
 cd plug-and-play-rag
 
-# Copy environment template
-cp .env.template .env
-# Edit .env with your configuration
+# 2. Quick setup with our automated script
+python setup.py
+
+# 3. Deploy with Docker
+./deploy.sh
 ```
 
-### 2. Configure Your System
+**🎉 Done!** Your RAG system is running at `http://localhost:8000`
 
-Edit `config/app_config.yaml` to configure:
+---
 
-- **LLM Provider**: Choose Gemini, OpenAI, Ollama, etc.
-- **Data Sources**: Add your CSV files and/or databases
-- **Embedding Model**: Configure text embedding settings
-- **Server Options**: Port, CORS, logging, etc.
+## 🎯 Why Use Docker?
 
-### 3. Add Your Data
+| Benefit | Description |
+|---------|-------------|
+| **🔒 Consistent Environment** | Works the same on your laptop, server, or cloud |
+| **📦 All Dependencies Included** | No need to install Python, databases, or other tools |
+| **🚀 Easy Scaling** | Scale up to handle more users and data |
+| **🔄 Simple Updates** | Update with a single command |
+| **🛡️ Isolation** | Won't interfere with other applications |
 
+---
+
+## 📋 Prerequisites
+
+Make sure you have installed:
+- **Docker** (version 20.0+) - [Install Docker](https://docs.docker.com/get-docker/)
+- **Docker Compose** (usually included with Docker)
+
+### Quick Docker Installation
 ```bash
-# Create data directory
-mkdir -p data
+# Ubuntu/Debian
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-# Add your CSV files
-cp your_data.csv data/
+# macOS (with Homebrew)
+brew install docker
+
+# Windows
+# Download Docker Desktop from https://docker.com
 ```
 
-### 4. Run with Docker
-
-```bash
-# Build and run the application
-docker-compose -f docker-compose.plug-and-play.yml up --build
-
-# Or with database services
-docker-compose -f docker-compose.plug-and-play.yml --profile with-db up --build
-```
-
-### 5. Start Chatting!
-
-The API will be available at `http://localhost:8000`
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Chat endpoint
-curl -X POST http://localhost:8000/chat \\
-  -H "Content-Type: application/json" \\
-  -d '{"message": "What is machine learning?", "user_name": "user123"}'
-```
-
-## 📋 Configuration Guide
-
-### Basic Configuration Structure
-
-```yaml
-# config/app_config.yaml
-app_name: "My RAG System"
-version: "1.0.0"
-
-llm:
-  provider: "gemini"  # gemini, openai, ollama, lmstudio, custom
-  api_key: "${GEMINI_API_KEY}"
-  model_name: "gemini-pro"
-  temperature: 0.7
-
-csv_sources:
-  - name: "my_documents"
-    file_path: "documents.csv"
-    text_columns: ["title", "content"]
-    metadata_columns: ["category", "date"]
-    
-auto_ingest_on_startup: true
-```
-
-### LLM Provider Configuration
-
-#### Gemini (Google AI)
+---
 
 ```yaml
 llm:
