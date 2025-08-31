@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Chat with Your Data - Startup Script
-# This script starts the complete RAG system with Kafka integration
+# Plug-and-Play RAG - Startup Script
+# This script starts the complete RAG system with optional Kafka integration
 
 set -e
 
-echo "🚀 Starting Chat with Your Data RAG System..."
+echo "� Starting Plug-and-Play RAG System..."
 
 # Colors for output
 RED='\033[0;31m'

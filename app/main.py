@@ -134,9 +134,10 @@ async def lifespan(app: FastAPI):
             await redis_tracker.disconnect()
 
 app = FastAPI(
-    title="Chat with Your Data",
-    description="A RAG system that allows you to chat with your database data using AI",
+    title="Plug-and-Play RAG API",
+    description="Universal RAG system supporting multiple databases and LLM providers",
     version="1.0.0",
+    docs_url="/docs",
     lifespan=lifespan
 )
 
@@ -182,7 +183,7 @@ async def root():
     """Root endpoint returning API health status."""
     return HealthResponse(
         status="healthy",
-        message="Chat with Your Data API is running",
+        message="Plug-and-Play RAG API is running - Connect any database to any LLM!",
         version="1.0.0"
     )
 

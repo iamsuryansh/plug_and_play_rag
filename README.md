@@ -1,13 +1,14 @@
-# 🚀 Chat with Your Data - Production RAG System
+# � Plug-and-Play RAG - Universal AI Data Assistant
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-0.4+-orange.svg)](https://www.trychroma.com/)
+[![Multi-LLM](https://img.shields.io/badge/Multi--LLM-Supported-purple.svg)](LLM_CONFIGURATION.md)
 [![Kafka](https://img.shields.io/badge/Kafka-Ready-red.svg)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](http://localhost:8001)
 
-> **🎯 Production-ready RAG (Retrieval-Augmented Generation) system that transforms how you interact with databases through natural language queries**
+> **🎯 Universal plug-and-play RAG system that connects any database to any LLM - from local Ollama to cloud Gemini AI**
 
 **Instead of writing SQL:** `SELECT * FROM articles WHERE category='tech' AND published_date > '2024-01-01'`  
 **Just ask:** *"What tech articles have we published recently?"*
@@ -37,6 +38,16 @@ curl -X POST "http://localhost:8001/chat" \
   "user_name": "demo"
 }
 ```
+
+## 🔌 What Makes It "Plug-and-Play"?
+
+**🗃️ Any Database → Any LLM → Any Scale**
+
+- **Plug in your data**: PostgreSQL, MongoDB, CSV files, APIs
+- **Play with any LLM**: Gemini, Ollama, LM Studio, custom endpoints  
+- **Scale as needed**: From laptop to enterprise with Kafka + Redis
+
+No vendor lock-in. No complex setup. Just plug your data source, choose your LLM, and start chatting!
 
 ## 🏗️ System Architecture
 

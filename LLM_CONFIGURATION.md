@@ -1,6 +1,6 @@
-# LLM Configuration Examples
+# LLM Configuration Guide - Plug-and-Play RAG
 
-This guide shows how to configure different LLM providers for the chat-with-your-data system.
+This guide shows how to configure different LLM providers for the Plug-and-Play RAG system.
 
 ## Gemini AI (Default)
 
