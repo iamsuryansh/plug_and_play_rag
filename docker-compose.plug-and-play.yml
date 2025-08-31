@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  plug-and-play-rag:
+    build: .
+    container_name: plug-and-play-rag
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount configuration directory
+      - ./config:/app/config:ro
+      # Mount data directory for CSV files
+      - ./data:/app/data:ro  
+      # Mount logs directory for persistent logs
+      - ./logs:/app/logs
+      # Mount vector database for persistence
+      - ./chroma_db:/app/chroma_db
+    environment:
+      # Configuration file path
+      - CONFIG_PATH=/app/config/app_config.yaml
+      # Environment variables that can be used in config
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PostgreSQL database
+  postgres:
+    image: postgres:15
+    container_name: rag-postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME:-ragdb}
+      - POSTGRES_USER=${DB_USER:-raguser}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-ragpass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    profiles: ["with-db"]
+
+  # Optional: MongoDB database  
+  mongodb:
+    image: mongo:6
+    container_name: rag-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-raguser}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-ragpass}
+      - MONGO_INITDB_DATABASE=${MONGO_DB:-ragdb}
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    profiles: ["with-db"]
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  default:
+    name: rag-network

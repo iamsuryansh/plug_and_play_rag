@@ -1,0 +1,53 @@
+app_name: Plug-and-Play RAG
+auto_ingest_on_startup: true
+batch_processing: true
+cors_origins:
+- '*'
+csv_sources:
+- chunk_size: 1000
+  columns:
+  - name: title
+    required: true
+    type: text
+  - name: content
+    required: true
+    type: text
+  - name: category
+    required: false
+    type: text
+  delimiter: ','
+  encoding: utf-8
+  file_path: sample_data.csv
+  has_header: true
+  metadata_columns:
+  - category
+  name: sample_articles
+  text_columns:
+  - title
+  - content
+description: Retrieval-Augmented Generation system with multiple data sources
+embedding:
+  batch_size: 32
+  device: cpu
+  model_name: all-MiniLM-L6-v2
+enable_chat_history: true
+enable_cors: true
+enable_streaming: true
+llm:
+  api_key: ${GEMINI_API_KEY}
+  model_name: gemini-pro
+  provider: gemini
+  temperature: 0.7
+server:
+  host: 0.0.0.0
+  log_level: info
+  port: 8000
+  reload: false
+  workers: 1
+vector_db:
+  collection_name: rag_documents
+  max_results: 10
+  persist_directory: /app/chroma_db
+  similarity_threshold: 0.7
+  type: chromadb
+version: 1.0.0
