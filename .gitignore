@@ -49,11 +49,17 @@ Thumbs.db
 
 # Application specific
 chroma_db/
+chat_history/
+logs/
 *.log
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
+
+# Data files (user data - optional, remove if you want to commit sample data)
+# data/*.csv
+# data/*.json
 
 # Docker
 .docker/
@@ -63,3 +69,20 @@ htmlcov/
 *.temp
 temp/
 tmp/
+
+# Environment files (keep templates, ignore actual env files)
+.env
+.env.local
+.env.development
+.env.production
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~

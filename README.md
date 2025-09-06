@@ -43,7 +43,23 @@ python setup.py
 ./deploy.sh
 ```
 
-### Option 2: Manual Setup
+### Option 2: Local Development (Virtual Environment)
+```bash
+# 1. Set up virtual environment and dependencies
+python3 setup_venv.py
+
+# 2. Add your CSV files to data folder
+cp your-data.csv data/
+
+# 3. Configure your API keys
+cp .env.template .env
+# Edit .env with your API keys
+
+# 4. Start development server
+./dev.sh
+```
+
+### Option 3: Manual Docker Setup
 ```bash
 # 1. Copy your CSV files to data folder
 cp your-data.csv data/
@@ -53,7 +69,7 @@ cp config/app_config.yaml config/my_config.yaml
 # Edit my_config.yaml with your preferences
 
 # 3. Start the system
-docker-compose -f docker-compose.plug-and-play.yml up
+docker-compose up
 ```
 
 ### 🎉 That's it! Your AI assistant is ready at `http://localhost:8000`
